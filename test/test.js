@@ -129,23 +129,6 @@ describe('Apostrophe Sitemap', function() {
     assert(inserted.slug === 'cheese');
   });
 
-  // it('make sure the product is published and out of the trash for test purposes', async function() {
-  //   const updated = await apos.product.publish(apos.task.getReq({
-  //     mode: 'draft'
-  //   }), testDraftProduct);
-
-  //   // const updated = await apos.doc.db.update({}, {
-  //   //   $set: {
-  //   //     archived: false,
-  //   //     published: true
-  //   //   }
-  //   // }, {
-  //   //   multi: true
-  //   // });
-  //   console.info(updated);
-  //   assert(updated);
-  // });
-
   it('insert an unpublished product for test purposes', async function() {
     const rockProduct = apos.product.newInstance();
     rockProduct.title = 'Rocks';
@@ -159,5 +142,24 @@ describe('Apostrophe Sitemap', function() {
     assert(inserted.aposMode === 'draft');
     assert(inserted.published === false);
     assert(inserted.slug === 'rocks');
+  });
+
+  it('should generate a suitable sitemap', async function() {
+    this.timeout(10000);
+    try {
+      const xml = await apos.http.get('/sitemap.xml');
+      console.info('🌏', xml); // TEMP
+
+      assert(xml);
+      assert(xml.indexOf('<loc>http://localhost:7780/</loc>') !== -1);
+      assert(xml.indexOf('<loc>http://localhost:7780/tab-one</loc>') !== -1);
+      assert(xml.indexOf('<loc>http://localhost:7780/tab-two</loc>') !== -1);
+      assert(xml.indexOf('<loc>http://localhost:7780/tab-one/child-one</loc>') !== -1);
+      assert(xml.indexOf('<loc>http://localhost:7780/products/cheese</loc>') !== -1);
+      assert(xml.indexOf('<loc>http://localhost:7780/products/rocks</loc>') === -1);
+    } catch (error) {
+      console.error('😩', error); // TEMP
+      assert(!error);
+    }
   });
 });
