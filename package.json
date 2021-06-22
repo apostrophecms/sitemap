@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "npm run eslint",
     "eslint": "eslint .",
-    "test": "npm run lint"
+    "test": "npm run lint && mocha"
   },
   "repository": {
     "type": "git",
@@ -16,12 +16,9 @@
   "author": "Apostrophe Technologies",
   "license": "MIT",
   "devDependencies": {
+    "apostrophe": "^3.0.1",
     "eslint": "^7.9.0",
     "eslint-config-apostrophe": "^3.4.0",
-    "eslint-config-standard": "^14.1.1",
-    "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1"
+    "mocha": "^7.1.2"
   }
 }

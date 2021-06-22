@@ -1,0 +1,116 @@
+const assert = require('assert');
+const t = require('apostrophe/test-lib/util');
+
+describe('Apostrophe Sitemap', function() {
+  let apos;
+
+  this.timeout(5000);
+
+  after(async function() {
+    return t.destroy(apos);
+  });
+
+  it('should be a property of the apos object', async function() {
+    await t.create({
+      root: module,
+      // testModule: true,
+      baseUrl: 'http://localhost:7780',
+      modules: {
+        '@apostrophecms/express': {
+          options: {
+            port: 7780,
+            session: { secret: 'supersecret' }
+          }
+        },
+        '@apostrophecms/sitemap': {},
+        '@apostrophecms/page': {
+          options: {
+            park: [
+              {
+                title: 'Tab One',
+                type: 'default-page',
+                slug: '/tab-one',
+                parkedId: 'tabOne',
+                _children: [
+                  {
+                    title: 'Tab One Child One',
+                    type: 'default-page',
+                    slug: '/tab-one/child-one',
+                    parkedId: 'tabOneChildOne'
+                  },
+                  {
+                    title: 'Tab One Child Two',
+                    type: 'default-page',
+                    slug: '/tab-one/child-two',
+                    parkedId: 'tabOneChildTwo'
+                  }
+                ]
+              },
+              {
+                title: 'Tab Two',
+                type: 'default-page',
+                slug: '/tab-two',
+                parkedId: 'tabTwo',
+                _children: [
+                  {
+                    title: 'Tab Two Child One',
+                    type: 'default-page',
+                    slug: '/tab-two/child-one',
+                    parkedId: 'tabTwoChildOne'
+                  },
+                  {
+                    title: 'Tab Two Child Two',
+                    type: 'default-page',
+                    slug: '/tab-two/child-two',
+                    parkedId: 'tabTwoChildTwo'
+                  }
+                ]
+              },
+              {
+                title: 'Products',
+                type: 'product-page',
+                slug: '/products',
+                parkedId: 'products'
+              }
+            ],
+            types: [
+              {
+                name: '@apostrophecms/home-page',
+                label: 'Home'
+              },
+              {
+                name: 'default-page',
+                label: 'Default'
+              },
+              {
+                name: 'product-page',
+                label: 'Products'
+              }
+            ]
+          }
+        },
+        'default-page': {
+          extend: '@apostrophecms/page-type'
+        },
+        product: {
+          extend: '@apostrophecms/piece-type'
+        },
+        'product-page': {
+          extend: '@apostrophecms/piece-page-type'
+        },
+        testRunner: {
+          handlers(self) {
+            return {
+              'apostrophe:afterInit': {
+                checkSitemap () {
+                  apos = self.apos;
+                  assert(self.apos.modules['@apostrophecms/sitemap']);
+                }
+              }
+            };
+          }
+        }
+      }
+    });
+  });
+});
