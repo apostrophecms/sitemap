@@ -3,8 +3,9 @@ const t = require('apostrophe/test-lib/util');
 
 describe('Apostrophe Sitemap', function() {
   let apos;
+  let testDraftProduct;
 
-  this.timeout(5000);
+  this.timeout(t.timeout);
 
   after(async function() {
     return t.destroy(apos);
@@ -93,7 +94,10 @@ describe('Apostrophe Sitemap', function() {
           extend: '@apostrophecms/page-type'
         },
         product: {
-          extend: '@apostrophecms/piece-type'
+          extend: '@apostrophecms/piece-type',
+          options: {
+            alias: 'product'
+          }
         },
         'product-page': {
           extend: '@apostrophecms/piece-page-type'
@@ -112,5 +116,48 @@ describe('Apostrophe Sitemap', function() {
         }
       }
     });
+  });
+
+  it('insert a product for test purposes', async function() {
+    testDraftProduct = apos.product.newInstance();
+    testDraftProduct.title = 'Cheese';
+    testDraftProduct.slug = 'cheese';
+
+    const inserted = await apos.product.insert(apos.task.getReq(), testDraftProduct);
+
+    assert(inserted._id);
+    assert(inserted.slug === 'cheese');
+  });
+
+  // it('make sure the product is published and out of the trash for test purposes', async function() {
+  //   const updated = await apos.product.publish(apos.task.getReq({
+  //     mode: 'draft'
+  //   }), testDraftProduct);
+
+  //   // const updated = await apos.doc.db.update({}, {
+  //   //   $set: {
+  //   //     archived: false,
+  //   //     published: true
+  //   //   }
+  //   // }, {
+  //   //   multi: true
+  //   // });
+  //   console.info(updated);
+  //   assert(updated);
+  // });
+
+  it('insert an unpublished product for test purposes', async function() {
+    const rockProduct = apos.product.newInstance();
+    rockProduct.title = 'Rocks';
+    rockProduct.slug = 'rocks';
+    rockProduct.published = false;
+
+    const inserted = await apos.product.insert(apos.task.getReq({
+      mode: 'draft'
+    }), rockProduct);
+
+    assert(inserted.aposMode === 'draft');
+    assert(inserted.published === false);
+    assert(inserted.slug === 'rocks');
   });
 });
