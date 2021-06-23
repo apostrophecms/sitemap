@@ -99,6 +99,7 @@ describe('Apostrophe Sitemap', function() {
     }
   });
 });
+
 const parkedPages = [
   {
     title: 'Tab One',
