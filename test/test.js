@@ -14,7 +14,6 @@ describe('Apostrophe Sitemap', function() {
   it('should be a property of the apos object', async function() {
     await t.create({
       root: module,
-      // testModule: true,
       baseUrl: 'http://localhost:7780',
       modules: {
         '@apostrophecms/express': {
@@ -26,68 +25,8 @@ describe('Apostrophe Sitemap', function() {
         '@apostrophecms/sitemap': {},
         '@apostrophecms/page': {
           options: {
-            park: [
-              {
-                title: 'Tab One',
-                type: 'default-page',
-                slug: '/tab-one',
-                parkedId: 'tabOne',
-                _children: [
-                  {
-                    title: 'Tab One Child One',
-                    type: 'default-page',
-                    slug: '/tab-one/child-one',
-                    parkedId: 'tabOneChildOne'
-                  },
-                  {
-                    title: 'Tab One Child Two',
-                    type: 'default-page',
-                    slug: '/tab-one/child-two',
-                    parkedId: 'tabOneChildTwo'
-                  }
-                ]
-              },
-              {
-                title: 'Tab Two',
-                type: 'default-page',
-                slug: '/tab-two',
-                parkedId: 'tabTwo',
-                _children: [
-                  {
-                    title: 'Tab Two Child One',
-                    type: 'default-page',
-                    slug: '/tab-two/child-one',
-                    parkedId: 'tabTwoChildOne'
-                  },
-                  {
-                    title: 'Tab Two Child Two',
-                    type: 'default-page',
-                    slug: '/tab-two/child-two',
-                    parkedId: 'tabTwoChildTwo'
-                  }
-                ]
-              },
-              {
-                title: 'Products',
-                type: 'product-page',
-                slug: '/products',
-                parkedId: 'products'
-              }
-            ],
-            types: [
-              {
-                name: '@apostrophecms/home-page',
-                label: 'Home'
-              },
-              {
-                name: 'default-page',
-                label: 'Default'
-              },
-              {
-                name: 'product-page',
-                label: 'Products'
-              }
-            ]
+            park: parkedPages,
+            types: pageTypes
           }
         },
         'default-page': {
@@ -147,7 +86,6 @@ describe('Apostrophe Sitemap', function() {
   it('should generate a suitable sitemap', async function() {
     try {
       const xml = await apos.http.get('/sitemap.xml');
-      // console.info('🌏', xml); // TEMP
 
       assert(xml);
       assert(xml.indexOf('<loc>http://localhost:7780/</loc>') !== -1);
@@ -157,8 +95,70 @@ describe('Apostrophe Sitemap', function() {
       assert(xml.indexOf('<loc>http://localhost:7780/products/cheese</loc>') !== -1);
       assert(xml.indexOf('<loc>http://localhost:7780/products/rocks</loc>') === -1);
     } catch (error) {
-      console.error('😩', error); // TEMP
       assert(!error);
     }
   });
 });
+const parkedPages = [
+  {
+    title: 'Tab One',
+    type: 'default-page',
+    slug: '/tab-one',
+    parkedId: 'tabOne',
+    _children: [
+      {
+        title: 'Tab One Child One',
+        type: 'default-page',
+        slug: '/tab-one/child-one',
+        parkedId: 'tabOneChildOne'
+      },
+      {
+        title: 'Tab One Child Two',
+        type: 'default-page',
+        slug: '/tab-one/child-two',
+        parkedId: 'tabOneChildTwo'
+      }
+    ]
+  },
+  {
+    title: 'Tab Two',
+    type: 'default-page',
+    slug: '/tab-two',
+    parkedId: 'tabTwo',
+    _children: [
+      {
+        title: 'Tab Two Child One',
+        type: 'default-page',
+        slug: '/tab-two/child-one',
+        parkedId: 'tabTwoChildOne'
+      },
+      {
+        title: 'Tab Two Child Two',
+        type: 'default-page',
+        slug: '/tab-two/child-two',
+        parkedId: 'tabTwoChildTwo'
+      }
+    ]
+  },
+  {
+    title: 'Products',
+    type: 'product-page',
+    slug: '/products',
+    parkedId: 'products'
+  }
+];
+
+const pageTypes = [
+  {
+    name: '@apostrophecms/home-page',
+    label: 'Home'
+  },
+  {
+    name: 'default-page',
+    label: 'Default'
+  },
+  {
+    name: 'product-page',
+    label: 'Products'
+  }
+];

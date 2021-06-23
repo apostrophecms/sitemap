@@ -31,7 +31,7 @@ module.exports = {
   },
   tasks (self) {
     return {
-      mapTask: {
+      map: {
         usage: 'Generate a sitemap',
         async task (argv) {
           if (argv['update-cache']) {
@@ -51,6 +51,14 @@ module.exports = {
             );
           }
           return self.map();
+        }
+      },
+      clear: {
+        usage: 'Clear the existing sitemap',
+        async task (argv) {
+          // Just forget the current sitemaps to make room
+          // for regeneration on the next request
+          return self.apos.cache.clear(sitemapCacheName);
         }
       }
     };
@@ -333,7 +341,6 @@ module.exports = {
           });
         });
 
-        // const done = false;
         let skip = 0;
 
         for (const appModule of modules) {
@@ -359,8 +366,7 @@ module.exports = {
             // Results in a reasonable priority relative
             // to regular pages
             piece.level = 3;
-            // Future events are interesting,
-            // past events are boring
+            // Future events are interesting, past events are boring
             if (piece.startDate) {
               if (piece.startDate > self.today) {
                 piece.level--;
