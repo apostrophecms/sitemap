@@ -20,5 +20,9 @@
     "eslint": "^7.9.0",
     "eslint-config-apostrophe": "^3.4.0",
     "mocha": "^7.1.2"
+  },
+  "dependencies": {
+    "common-tags": "^1.8.0",
+    "dayjs": "^1.10.5"
   }
 }
