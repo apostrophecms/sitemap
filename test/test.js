@@ -147,15 +147,15 @@ describe('Apostrophe Sitemap', function() {
   it('should generate a suitable sitemap', async function() {
     try {
       const xml = await apos.http.get('/sitemap.xml');
-      console.info('🌏', xml); // TEMP
+      // console.info('🌏', xml); // TEMP
 
       assert(xml);
       assert(xml.indexOf('<loc>http://localhost:7780/</loc>') !== -1);
       assert(xml.indexOf('<loc>http://localhost:7780/tab-one</loc>') !== -1);
       assert(xml.indexOf('<loc>http://localhost:7780/tab-two</loc>') !== -1);
       assert(xml.indexOf('<loc>http://localhost:7780/tab-one/child-one</loc>') !== -1);
-      // assert(xml.indexOf('<loc>http://localhost:7780/products/cheese</loc>') !== -1);
-      // assert(xml.indexOf('<loc>http://localhost:7780/products/rocks</loc>') === -1);
+      assert(xml.indexOf('<loc>http://localhost:7780/products/cheese</loc>') !== -1);
+      assert(xml.indexOf('<loc>http://localhost:7780/products/rocks</loc>') === -1);
     } catch (error) {
       console.error('😩', error); // TEMP
       assert(!error);

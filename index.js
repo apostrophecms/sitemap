@@ -82,12 +82,12 @@ module.exports = {
           self.cacheOutput = [];
         }
 
-        await lock(); // CHECK
-        initConfig(); // CHECK
+        await lock();
+        initConfig();
         await map();
         await hreflang();
         await write();
-        await unlock(); // CHECK
+        await unlock();
 
         async function lock() {
           const lock = await self.apos.lock.lock('apos-sitemap');
@@ -132,13 +132,11 @@ module.exports = {
           }
 
           for (const locale of locales) {
-            const req = self.apos.task.getReq({
-              mode: 'published'
-            });
+            const req = self.apos.task.getReq();
             req.aposLocale = locale;
 
             await self.getPages(req);
-            // await self.getPieces(req, locale);
+            await self.getPieces(req);
             // TODO: Add support for self.custom method.
           }
         }
@@ -210,12 +208,12 @@ module.exports = {
         }
 
         async function unlock() {
-          const lock = await self.apos.lock.unlock('apos-sitemap');
-          console.info('UNLOCKED...', lock);
+          await self.apos.lock.unlock('apos-sitemap');
+          console.info('UNLOCKED...');
         }
       },
       writeSitemap: function() {
-        console.info('➡️ writeSitemap', self.maps);
+        console.info('➡️ writeSitemap');
         if (!self.perLocale) {
           // Simple single-file sitemap
           self.file = self.caching
@@ -257,7 +255,7 @@ module.exports = {
 
         async function insert() {
           for (const doc of self.cacheOutput) {
-            console.info('✍️ WRITE TO CACHE INSERT', doc);
+            // console.info('✍️ WRITE TO CACHE INSERT', doc);
             await self.apos.cache.set(sitemapCacheName, doc.filename, doc, self.cacheLifetime);
           }
         }
@@ -341,58 +339,64 @@ module.exports = {
 
         pages.forEach(self.output);
       },
-      // async getPieces(req) {
-      //   const modules = _.filter(self.apos.modules, function(module, name) {
-      //     return _.find(module.__meta.chain, function(entry) {
-      //       return entry.name === 'apostrophe-pieces';
-      //     });
-      //   });
-      //   return async.eachSeries(modules, function(module, callback) {
-      //     if (_.includes(self.excludeTypes, module.name)) {
-      //       return setImmediate(callback);
-      //     }
-      //     // Paginate through 100 (by default) at a time to
-      //     // avoid slamming memory
-      //     let done = false;
-      //     let skip = 0;
-      //     return async.whilst(
-      //       function() {
-      //         return !done;
-      //       },
-      //       function(callback) {
-      //         return self.findPieces(req, module).skip(skip).limit(self.piecesPerBatch).toArray(function(err, pieces) {
-      //           if (err) {
-      //             console.error(err);
-      //           }
-      //           _.each(pieces, function(piece) {
-      //             if (!piece._url) {
-      //             // This one has no page to be viewed on
-      //               return;
-      //             }
-      //             // Results in a reasonable priority relative
-      //             // to regular pages
-      //             piece.level = 3;
-      //             // Future events are interesting,
-      //             // past events are boring
-      //             if (piece.startDate) {
-      //               if (piece.startDate > self.today) {
-      //                 piece.level--;
-      //               } else {
-      //                 piece.level++;
-      //               }
-      //             }
-      //             self.output(piece);
-      //           });
-      //           if (!pieces.length) {
-      //             done = true;
-      //           } else {
-      //             skip += pieces.length;
-      //           }
-      //           return callback(null);
-      //         });
-      //       }, callback);
-      //   }, callback);
-      // },
+      async getPieces(req) {
+        console.info('➡️ getPieces');
+        const modules = Object.values(self.apos.modules).filter(function(mod) {
+          // console.info(mod.__meta.chain);
+          return mod.__meta.chain.find(entry => {
+            return entry.name === '@apostrophecms/piece-type';
+          });
+        });
+        console.info('');
+
+        // const done = false;
+        let skip = 0;
+
+        for (const appModule of modules) {
+          if (self.excludeTypes.includes(appModule.__meta.name)) {
+            continue;
+          }
+          await stashPieces(appModule);
+          skip = 0;
+        }
+
+        async function stashPieces(appModule) {
+          console.info('➡️ stashPieces', appModule.__meta.name);
+          // Paginate through 100 (by default) at a time to avoid slamming
+          // memory
+          const pieceSet = await appModule.find(req, {})
+            .relationships(false).areas(false).skip(skip)
+            .limit(self.piecesPerBatch).toArray();
+
+          pieceSet.forEach(function(piece) {
+            if (!piece._url) {
+            // This one has no page to be viewed on
+              return;
+            }
+            // Results in a reasonable priority relative
+            // to regular pages
+            piece.level = 3;
+            // Future events are interesting,
+            // past events are boring
+            if (piece.startDate) {
+              if (piece.startDate > self.today) {
+                piece.level--;
+              } else {
+                piece.level++;
+              }
+            }
+            self.output(piece);
+          });
+
+          if (!pieceSet.length) {
+            console.info('All done with', appModule.__meta.name);
+          } else {
+            skip += pieceSet.length;
+
+            await stashPieces(appModule);
+          }
+        }
+      },
       // Output the sitemap entry for the given doc, including its children if
       // any. The entry is buffered for output as part of the map for the
       // appropriate locale. If the workflow module is not in use they all
@@ -402,7 +406,7 @@ module.exports = {
       // discarded.
 
       output: async function(page) {
-        console.info('➡️ output', self.format);
+        // console.info('➡️ output', self.format);
         const locale = page.workflowLocale || defaultLocale;
         if (self.workflow) {
           // TODO: Workflow bits refactor
@@ -456,7 +460,7 @@ module.exports = {
       // Append `str` to an array set aside for the map entries
       // for the host `locale`.
       write: function(locale, str) {
-        console.info('➡️ write', locale, str);
+        // console.info('➡️ write', locale);
         self.maps[locale] = self.maps[locale] || [];
         self.maps[locale].push(str);
       },
