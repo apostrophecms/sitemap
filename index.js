@@ -50,7 +50,6 @@ module.exports = {
             `
             );
           }
-          console.info('➡️ RUNNING MAP TASK');
           return self.map();
         }
       }
@@ -60,11 +59,9 @@ module.exports = {
     return {
       get: {
         '/sitemap.xml': async function(req, res) {
-          console.info('➡️ ROUTE', '/sitemap.xml');
           return self.sendCache(res, 'sitemap.xml');
         },
         '/sitemaps/*': async function(req, res) {
-          console.info('➡️ ROUTE', '/sitemaps/*');
           return self.sendCache(res, 'sitemaps/' + req.params[0]);
         }
       }
@@ -90,8 +87,7 @@ module.exports = {
         await unlock();
 
         async function lock() {
-          const lock = await self.apos.lock.lock('apos-sitemap');
-          console.info('LOCKED...', lock);
+          await self.apos.lock.lock('apos-sitemap');
         }
 
         function initConfig() {
@@ -209,11 +205,9 @@ module.exports = {
 
         async function unlock() {
           await self.apos.lock.unlock('apos-sitemap');
-          console.info('UNLOCKED...');
         }
       },
       writeSitemap: function() {
-        console.info('➡️ writeSitemap');
         if (!self.perLocale) {
           // Simple single-file sitemap
           self.file = self.caching
@@ -249,13 +243,11 @@ module.exports = {
         return null;
       },
       writeToCache: async function(callback) {
-        console.info('➡️ writeSitemap');
         await self.apos.cache.clear(sitemapCacheName);
         await insert();
 
         async function insert() {
           for (const doc of self.cacheOutput) {
-            // console.info('✍️ WRITE TO CACHE INSERT', doc);
             await self.apos.cache.set(sitemapCacheName, doc.filename, doc, self.cacheLifetime);
           }
         }
@@ -264,7 +256,6 @@ module.exports = {
         return 'success';
       },
       writeIndex: function() {
-        console.info('➡️ writeIndex');
         const now = new Date();
         if (!self.baseUrl) {
           throw new Error(
@@ -274,7 +265,7 @@ module.exports = {
             'Usually you will override this in data/local.js, on production.'
           );
         }
-        console.info('🕯 WRITING FILE... MAPS:', self.maps);
+
         self.writeFile('sitemaps/index.xml',
 
           '<?xml version="1.0" encoding="UTF-8"?>\n' +
@@ -294,7 +285,6 @@ module.exports = {
 
       },
       writeMap: function(file, map) {
-        console.info('➡️ writeMap', typeof map);
         if (self.format === 'xml') {
           self.writeXmlMap(file, map);
         } else {
@@ -302,7 +292,6 @@ module.exports = {
         }
       },
       writeXmlMap: function(file, map) {
-        console.info('➡️ writeXmlMap');
         self.writeFile(file,
           '<?xml version="1.0" encoding="UTF-8"?>\n' +
           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' +
@@ -312,7 +301,6 @@ module.exports = {
         );
       },
       writeFile: function(filename, str) {
-        console.info('➡️ writeFile');
         if (!self.caching) {
           filename = require('path').resolve(self.apos.rootDir + '/public', filename);
           if (filename === '/dev/stdout') {
@@ -330,7 +318,6 @@ module.exports = {
         }
       },
       async getPages (req) {
-        console.info('➡️ getPages', req.locale);
         const pages = await self.apos.page.find(req, {}).areas(false)
           .relationships(false).sort({
             level: 1,
@@ -340,14 +327,11 @@ module.exports = {
         pages.forEach(self.output);
       },
       async getPieces(req) {
-        console.info('➡️ getPieces');
         const modules = Object.values(self.apos.modules).filter(function(mod) {
-          // console.info(mod.__meta.chain);
           return mod.__meta.chain.find(entry => {
             return entry.name === '@apostrophecms/piece-type';
           });
         });
-        console.info('');
 
         // const done = false;
         let skip = 0;
@@ -361,7 +345,6 @@ module.exports = {
         }
 
         async function stashPieces(appModule) {
-          console.info('➡️ stashPieces', appModule.__meta.name);
           // Paginate through 100 (by default) at a time to avoid slamming
           // memory
           const pieceSet = await appModule.find(req, {})
@@ -388,9 +371,7 @@ module.exports = {
             self.output(piece);
           });
 
-          if (!pieceSet.length) {
-            console.info('All done with', appModule.__meta.name);
-          } else {
+          if (pieceSet.length) {
             skip += pieceSet.length;
 
             await stashPieces(appModule);
@@ -406,7 +387,6 @@ module.exports = {
       // discarded.
 
       output: async function(page) {
-        // console.info('➡️ output', self.format);
         const locale = page.workflowLocale || defaultLocale;
         if (self.workflow) {
           // TODO: Workflow bits refactor
@@ -460,31 +440,27 @@ module.exports = {
       // Append `str` to an array set aside for the map entries
       // for the host `locale`.
       write: function(locale, str) {
-        // console.info('➡️ write', locale);
         self.maps[locale] = self.maps[locale] || [];
         self.maps[locale].push(str);
       },
       sendCache: async function(res, path) {
-        console.info('➡️ SEND CACHE', path);
         try {
           const file = await self.apos.cache.get(sitemapCacheName, path);
-          // console.info('SEND CACHE FILE:', sitemapCacheName, path, file);
+
           if (!file) {
-            // If anything else exists in our little filesystem, this
-            // should be a 404 (think of a URL like /sitemap/madeupstuff).
-            // Otherwise it just means the
-            // cache has expired or has never been populated.
+            // If anything else exists in our little filesystem, this should be
+            // a 404 (think of a URL like /sitemap/madeupstuff). Otherwise it
+            // just means the cache has expired or has never been populated.
             //
-            // Check for the sitemap index or, if we're not
-            // running in that mode, check for sitemap.xml
+            // Check for the sitemap index or, if we're not running in that
+            // mode, check for sitemap.xml
             //
-            // Without this check every 404 would cause a lot of work to be done.
-            const exists = await self.apos.cache.get(sitemapCacheName, self.perLocale
-              ? 'sitemaps/index.xml'
-              : 'sitemap.xml');
+            // Without this check every 404 would cause a lot of work to be
+            // done.
+            const sitemapFile = self.perLocale ? 'sitemaps/index.xml' : 'sitemap.xml';
+            const exists = await self.apos.cache.get(sitemapCacheName, sitemapFile);
 
             if (exists) {
-              console.info('EXISTS 👽', exists);
               return notFound();
             }
             return self.cacheAndRetry(res, path);
@@ -495,19 +471,16 @@ module.exports = {
         }
 
         function notFound() {
-          console.info('SITEMAP 404 NOT FOUND');
           return res.status(404).send('not found');
         }
 
         function fail(err) {
-          console.info('SITEMAP 500');
           console.error(err);
           return res.status(500).send('error');
         }
       },
       cacheAndRetry: async function(res, path) {
         try {
-          console.info('➡️ cacheAndRetry', path);
           await self.map();
           return self.sendCache(res, path);
         } catch (error) {
@@ -560,6 +533,16 @@ module.exports = {
         }
 
         return xml;
+      },
+      ensureDir (dir) {
+        if (!self.caching) {
+          dir = self.apos.rootDir + '/public/' + dir;
+          try {
+            fs.mkdirSync(dir);
+          } catch (e) {
+            // The directory already exists.
+          }
+        }
       }
       // End of methods obj
     };
