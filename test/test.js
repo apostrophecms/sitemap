@@ -70,12 +70,73 @@ describe('Apostrophe Sitemap', function() {
       assert(xml.indexOf('<loc>http://localhost:7780/tab-one</loc>') !== -1);
       assert(xml.indexOf('<loc>http://localhost:7780/tab-two</loc>') !== -1);
       assert(xml.indexOf('<loc>http://localhost:7780/tab-one/child-one</loc>') !== -1);
+      assert(xml.indexOf('<loc>http://localhost:7780/products</loc>') !== -1);
       assert(xml.indexOf('<loc>http://localhost:7780/products/cheese</loc>') !== -1);
       assert(xml.indexOf('<loc>http://localhost:7780/products/rocks</loc>') === -1);
     } catch (error) {
       assert(!error);
     }
   });
+
+  it('should destroy the app', async function () {
+    return t.destroy(apos);
+  });
+
+  it('should be a property of the 🆕 apos object that excludes products', async function() {
+    const appConfig = getAppConfig({
+      excludeTypes: [ 'product-page', 'product' ]
+    });
+
+    await t.create({
+      root: module,
+      baseUrl: 'http://localhost:7780',
+      modules: {
+        ...appConfig,
+        testRunner: {
+          handlers(self) {
+            return {
+              'apostrophe:afterInit': {
+                checkSitemap () {
+                  apos = self.apos;
+                  assert(self.apos.modules['@apostrophecms/sitemap']);
+                }
+              }
+            };
+          }
+        }
+      }
+    });
+  });
+
+  it('insert 🧀 again', async function() {
+    testDraftProduct = apos.product.newInstance();
+    testDraftProduct.title = 'Cheese';
+    testDraftProduct.slug = 'cheese';
+
+    const inserted = await apos.product.insert(apos.task.getReq(), testDraftProduct);
+
+    assert(inserted._id);
+    assert(inserted.slug === 'cheese');
+  });
+
+  it('should generate a sitemap without products or product pages', async function() {
+    try {
+      const xml = await apos.http.get('/sitemap.xml');
+
+      assert(xml);
+      assert(xml.indexOf('<loc>http://localhost:7780/</loc>') !== -1);
+      assert(xml.indexOf('<loc>http://localhost:7780/tab-one</loc>') !== -1);
+      assert(xml.indexOf('<loc>http://localhost:7780/tab-two</loc>') !== -1);
+      assert(xml.indexOf('<loc>http://localhost:7780/tab-one/child-one</loc>') !== -1);
+
+      assert(xml.indexOf('<loc>http://localhost:7780/products</loc>') === -1);
+      assert(xml.indexOf('<loc>http://localhost:7780/products/cheese</loc>') === -1);
+      assert(xml.indexOf('<loc>http://localhost:7780/products/rocks</loc>') === -1);
+    } catch (error) {
+      assert(!error);
+    }
+  });
+
 });
 
 const parkedPages = [
