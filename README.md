@@ -8,9 +8,6 @@ This module generates a sitemap that includes all of the pages on your site that
 
 ## TODO
 
-- [ ] Add test for excludeTypes option
-- [ ] Confirm text format option
-- [ ] Confirm indent option
 - [ ] Confirm update-cache option
 - [ ] Document excludeTypes
 - [ ] Confirm `sitemap: false` option for modules

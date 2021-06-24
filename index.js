@@ -99,11 +99,15 @@ module.exports = {
         }
 
         function initConfig() {
-          self.format = argv.format || options.format || 'xml';
+          // TODO: Bring this back when supporting multiple formats.
+          // self.format = argv.format || options.format || 'xml';
+          self.format = 'xml';
 
-          self.indent = (typeof argv.indent !== 'undefined')
-            ? argv.indent
-            : options.indent;
+          // TODO: Bring back when supporting text format.
+          // self.indent = (typeof argv.indent !== 'undefined')
+          //   ? argv.indent
+          //   : options.indent;
+          self.indent = false;
 
           self.excludeTypes = options.excludeTypes || [];
 
@@ -113,10 +117,12 @@ module.exports = {
           }
 
           self.perLocale = options.perLocale || argv['per-locale'];
+
           // Exception: plaintext sitemaps and sitemap indexes don't go
           // together, so we can presume that if they explicitly ask
           // for plaintext they are just doing content strategy and we
           // should produce a single report
+          // TODO: Revisit when supporting text format
           if (self.format === 'text') {
             self.perLocale = false;
           }
@@ -234,6 +240,7 @@ module.exports = {
 
           for (const key in self.maps) {
             let map = self.maps[key];
+            // TODO: Revisit when supporting text format
             const extension = (self.format === 'xml') ? 'xml' : 'txt';
 
             map = map.map(map, self.stringify).join('\n');
@@ -293,6 +300,7 @@ module.exports = {
 
       },
       writeMap: function(file, map) {
+        // TODO: Revisit when supporting text format
         if (self.format === 'xml') {
           self.writeXmlMap(file, map);
         } else {
@@ -407,6 +415,7 @@ module.exports = {
         if (!self.excludeTypes.includes(page.type)) {
           let url;
 
+          // TODO: Revisit when supporting text format
           if (self.format === 'text') {
             if (self.indent) {
               let i;
@@ -499,10 +508,12 @@ module.exports = {
         }
       },
       stringify (value) {
+        // TODO: Revisit when supporting text format
         if (Array.isArray(value) && (self.format !== 'xml')) {
           return value.join('');
         }
         if (typeof (value) !== 'object') {
+          // TODO: Revisit when supporting text format
           if (self.format === 'xml') {
             return self.apos.util.escapeHtml(value);
           }
