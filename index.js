@@ -1,5 +1,4 @@
 const fs = require('fs');
-// const path = require('path');
 const dayjs = require('dayjs');
 const { stripIndent } = require('common-tags');
 
@@ -16,10 +15,6 @@ module.exports = {
     // The number of pieces to index in each loop.
     piecesPerBatch: 100
   },
-  // bundle: {
-  //   directory: 'modules',
-  //   modules: getBundleModuleNames()
-  // },
   init(self, options) {
     self.caching = true;
 
@@ -193,8 +188,7 @@ module.exports = {
           }
         }
 
-        // TEMP
-        return 'success';
+        return null;
       },
       writeIndex: function() {
         const now = new Date();
