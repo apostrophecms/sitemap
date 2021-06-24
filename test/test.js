@@ -12,35 +12,13 @@ describe('Apostrophe Sitemap', function() {
   });
 
   it('should be a property of the apos object', async function() {
+    const appConfig = getAppConfig();
+
     await t.create({
       root: module,
       baseUrl: 'http://localhost:7780',
       modules: {
-        '@apostrophecms/express': {
-          options: {
-            port: 7780,
-            session: { secret: 'supersecret' }
-          }
-        },
-        '@apostrophecms/sitemap': {},
-        '@apostrophecms/page': {
-          options: {
-            park: parkedPages,
-            types: pageTypes
-          }
-        },
-        'default-page': {
-          extend: '@apostrophecms/page-type'
-        },
-        product: {
-          extend: '@apostrophecms/piece-type',
-          options: {
-            alias: 'product'
-          }
-        },
-        'product-page': {
-          extend: '@apostrophecms/piece-page-type'
-        },
+        ...appConfig,
         testRunner: {
           handlers(self) {
             return {
@@ -163,3 +141,37 @@ const pageTypes = [
     label: 'Products'
   }
 ];
+
+function getAppConfig (options = {}) {
+  return {
+    '@apostrophecms/express': {
+      options: {
+        port: 7780,
+        session: { secret: 'supersecret' }
+      }
+    },
+    '@apostrophecms/sitemap': {
+      options: {
+        excludeTypes: options.excludeTypes
+      }
+    },
+    '@apostrophecms/page': {
+      options: {
+        park: parkedPages,
+        types: pageTypes
+      }
+    },
+    'default-page': {
+      extend: '@apostrophecms/page-type'
+    },
+    product: {
+      extend: '@apostrophecms/piece-type',
+      options: {
+        alias: 'product'
+      }
+    },
+    'product-page': {
+      extend: '@apostrophecms/piece-page-type'
+    }
+  };
+}
