@@ -8,8 +8,6 @@ This module generates a sitemap that includes all of the pages on your site that
 
 ## TODO
 
-- [ ] Confirm update-cache option
-- [ ] Document excludeTypes
 - [ ] Confirm `sitemap: false` option for modules
 - [ ] Support additional locales
 
@@ -73,7 +71,7 @@ node app @apostrophecms/sitemap:clear
 
 This will force a new sitemap to be generated on the next request.
 
-<!-- ### Generating the sitemap ahead of time
+### Generating the sitemap ahead of time
 
 You can use this command line task to update the sitemap in Apostrophe's cache at any time, rather than waiting for it to expire after an hour and generate again on the next request:
 
@@ -81,9 +79,9 @@ You can use this command line task to update the sitemap in Apostrophe's cache a
 node app @apostrophecms/sitemap:map --update-cache
 ```
 
-If your site has many pages and pieces, generating the sitemap dynamically may take a long time. Scheduling the above task to run at least twice an hour via a [cron job](https://www.howtogeek.com/101288/how-to-schedule-tasks-on-linux-an-introduction-to-crontab-files/) guarantees that a search engine will never be forced to wait when requesting your sitemap. If you have enough content, search engines may hang up before your sitemap is generated, so this task is very useful. -->
+If your site has many pages and pieces, generating the sitemap dynamically may take a long time. Scheduling the above task to run at least twice an hour via a [cron job](https://www.howtogeek.com/101288/how-to-schedule-tasks-on-linux-an-introduction-to-crontab-files/) guarantees that a search engine will never be forced to wait when requesting your sitemap. If you have enough content, search engines may hang up before your sitemap is generated, so this task is very useful.
 
-<!-- ### Generating sitemaps as static files
+### Generating sitemaps as static files
 
 If you wish, you can generate a sitemap as a static file.
 
@@ -93,7 +91,7 @@ Just run this task:
 node app @apostrophecms/sitemap:map
 ```
 
-When `--update-cache` is not given, this task generates an XML sitemap and displays it on the console. This is mostly useful for content strategy purposes. If your goal is to serve the sitemap to search engines, see above for a better way. -->
+When `--update-cache` is not given, this task generates an XML sitemap and displays it on the console. This is mostly useful for content strategy purposes. If your goal is to serve the sitemap to search engines, see above for a better way.
 
 ## How to tell Google about your sitemap
 

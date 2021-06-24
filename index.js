@@ -41,15 +41,16 @@ module.exports = {
           }
 
           if (!self.baseUrl) {
-            // TODO: Update message
-            return new Error(stripIndent`
-              You must specify the top-level baseUrl option when configuring Apostrophe
-              to use this task. Example: baseUrl: "https://mycompany.com"
-              Note there is NO TRAILING SLASH.
-              Usually you will only do this in data/local.js, on production.
-            `
-            );
+            const error = stripIndent`
+              ⚠️ You must specify the top-level baseUrl option for the application
+              when configuring Apostrophe to use this task.
+              Example: \`baseUrl: "https://mycompany.com"\` (no trailing slash)
+              Usually you will only do this in data/local.js in production.
+            `;
+
+            return self.apos.util.error(error);
           }
+
           return self.map();
         }
       },
@@ -252,7 +253,6 @@ module.exports = {
           self.writeIndex();
         }
         if (self.caching) {
-          // TODO
           return self.writeToCache();
         }
         return null;
@@ -565,11 +565,3 @@ module.exports = {
     };
   }
 };
-
-// function getBundleModuleNames() {
-//   const source = path.join(__dirname, './modules/@apostrophecms');
-//   return fs
-//     .readdirSync(source, { withFileTypes: true })
-//     .filter(dirent => dirent.isDirectory())
-//     .map(dirent => `@apostrophecms/${dirent.name}`);
-// }
