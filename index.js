@@ -79,9 +79,6 @@ module.exports = {
   methods (self, options) {
     return {
       map: async function () {
-        // TODO: Get shed of workflow stuff
-        self.workflow = self.apos.modules['apostrophe-workflow'];
-
         const argv = self.apos.argv;
 
         if (self.caching) {
@@ -91,7 +88,6 @@ module.exports = {
         await lock();
         initConfig();
         await map();
-        await hreflang();
         await write();
         await unlock();
 
@@ -135,82 +131,12 @@ module.exports = {
 
           const locales = [ defaultLocale ];
 
-          if (self.workflow) {
-            // TODO: Workflow stuff
-            // locales = _.filter(_.keys(self.workflow.locales), function(locale) {
-            //   return !locale.match(/-draft$/) && !self.workflow.locales[locale].private;
-            // });
-          }
-
           for (const locale of locales) {
             const req = self.apos.task.getReq();
             req.aposLocale = locale;
 
             await self.getPages(req);
             await self.getPieces(req);
-            // TODO: Add support for self.custom method.
-          }
-        }
-
-        function hreflang() {
-
-          const alternativesByGuid = {};
-
-          customEach(function(entry) {
-            if (!alternativesByGuid[entry.url.workflowGuid]) {
-              alternativesByGuid[entry.url.workflowGuid] = [];
-            }
-            alternativesByGuid[entry.url.workflowGuid].push(entry);
-          });
-
-          customEach(function(entry) {
-            if (self.workflow) {
-              entry.url['xhtml:link'] = [
-                {
-                  _attributes: {
-                    rel: 'alternate',
-                    hreflang: entry.url.workflowLocale,
-                    href: entry.url.loc
-                  }
-                }
-              ];
-            }
-
-            const alternatives = alternativesByGuid[entry.url.workflowGuid];
-
-            for (const alternative in alternatives) {
-              if (alternative === entry) {
-                return;
-              }
-              entry.url['xhtml:link'].push({
-                _attributes: {
-                  rel: 'alternate',
-                  hreflang: alternative.url.workflowLocale,
-                  href: alternative.url.loc
-                }
-              });
-            };
-          });
-
-          customEach(function(entry) {
-            delete entry.url.workflowLocale;
-            delete entry.url.workflowGuid;
-          }, true);
-
-          function customEach(iterator, ignoreWorkflow) {
-            for (const map in self.maps) {
-              self.maps[map].forEach(function(entry) {
-                if (typeof (entry) !== 'object') {
-                  return;
-                }
-
-                // TODO: Update workflowGuid
-                if (!entry.url.workflowGuid && !ignoreWorkflow) {
-                  return;
-                }
-                iterator(entry);
-              });
-            }
           }
         }
 
@@ -394,23 +320,9 @@ module.exports = {
       },
       // Output the sitemap entry for the given doc, including its children if
       // any. The entry is buffered for output as part of the map for the
-      // appropriate locale. If the workflow module is not in use they all
-      // accumulate together for a "default" locale. Content not subject to
-      // workflow is grouped with the "default" locale. If workflow is active
-      // and the locale is not configured or is marked private, the output is
-      // discarded.
-
+      // appropriate locale.
       output: async function(page) {
         const locale = page.workflowLocale || defaultLocale;
-        if (self.workflow) {
-          // TODO: Workflow bits refactor
-          // if (!self.workflow.locales[locale]) {
-          //   return;
-          // }
-          // if (self.workflow.locales[locale].private) {
-          //   return;
-          // }
-        }
 
         if (!self.excludeTypes.includes(page.type)) {
           let url;
@@ -438,19 +350,12 @@ module.exports = {
               url: {
                 priority: priority,
                 changefreq: 'daily',
-                loc: url,
-                workflowGuid: page.workflowGuid,
-                workflowLocale: locale
+                loc: url
               }
             });
           }
         }
 
-      },
-      // Override to do more. You can invoke `self.output(doc)`
-      // from here as many times as you like.
-      custom: async function (req, locale) {
-        return null;
       },
       // Append `str` to an array set aside for the map entries
       // for the host `locale`.
@@ -468,7 +373,7 @@ module.exports = {
             // just means the cache has expired or has never been populated.
             //
             // Check for the sitemap index or, if we're not running in that
-            // mode, check for sitemap.xml
+            // mode, check for sitemap.xml.
             //
             // Without this check every 404 would cause a lot of work to be
             // done.
@@ -490,7 +395,7 @@ module.exports = {
         }
 
         function fail(err) {
-          console.error(err);
+          self.apos.util.error(err);
           return res.status(500).send('error');
         }
       },
@@ -503,7 +408,7 @@ module.exports = {
         }
 
         function fail(err) {
-          console.error('cacheAndRetry error:', err);
+          self.apos.util.error('cacheAndRetry error:', err);
           return res.status(500).send('error');
         }
       },

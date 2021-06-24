@@ -6,11 +6,6 @@ A frequently updated and accurate XML sitemap allows search engines to index you
 
 This module generates a sitemap that includes all of the pages on your site that are visible to the public, including "pieces" such as events, and blog posts. And it does so dynamically, with a short cache lifetime, so your sitemap is not out of date.
 
-## TODO
-
-- [ ] Confirm `sitemap: false` option for modules
-- [ ] Support additional locales
-
 ## How to use it
 
 * Install the module.
@@ -191,40 +186,6 @@ Or do it in `app.js` when configuring the module:
 ```
 
 You may specify multiple doc types to exclude. You may also exclude page types the same way by adding their doc type to the array, e.g., `styleguide`.
-
-<!-- You can also do this at the command line, which is helpful when generating a map just for content strategy purposes:
-
-```
-node app @apostrophecms/sitemap:map --format=text --indent --exclude-types=apostrophe-blog
-``` -->
-
-<!-- Alternatively, you can set the `sitemap` option to `false` when configuring any module that extends `apostrophe-custom-pages` or `apostrophe-pieces`.
-
-You can also explicitly set it to `true` if you wish to have sitemaps for a piece type that is normally excluded, like `apostrophe-users`. Of course this will only help if they have a `_url` property when fetched, usually via a corresponding module that extends `apostrophe-pieces-pages`. -->
-
-<!-- ## Removing the `siteMapPriority` field globally
-
-You may wish to not include the `siteMapPriority` field on any pieces or pages. To do this, add a `noPriority` option set to `true` when configuring `@apostrophecms/sitemap` in your `app.js`:
-
-```javascript
-  {
-    '@apostrophecms/sitemap': { noPriority: true }
-  }
-``` -->
-
-<!-- ## Integration with the `apostrophe-workflow` module
-
-If you are using the `apostrophe-workflow` module, the sitemap module will automatically fetch content for the live versions of all configured locales.
-
-By default, the result will be emitted as a single sitemap. [According to Google, this is OK, although you must claim all of the sites under a single identity in the Google webmaster console.](https://support.google.com/webmasters/answer/75712?hl=en) However, if you would prefer a separate sitemap file for each hostname found in the absolute URLs, you can set the `perLocale` option to `true` when configuring the module.
-
-Or, if you're generating static sitemaps at the command line, you can pass the `--per-locale` option.
-
-When you set the `perLocale` option, sitemaps are served by the module from `/sitemaps/fr.xml`, `/sitemaps/en.xml`, etc., and a sitemap index is served from `/sitemaps/index.xml`. **Make sure you list `/sitemaps/index.xml` for your Sitemap directive in `robots.txt`**.
-
-> If you generate static files instead with the `@apostrophecms/sitemap:map` task, a physical `public/sitemap` folder is created. **IF YOU CHANGE YOUR MIND AND WISH TO LET THE MODULE SERVE SITEMAPS FOR YOU, REMOVE THIS FOLDER.** Otherwise the static files will always "win."
-
-If the `perLocale` option is set to `true` for the module or the `--per-locale` command line parameter is passed, the `--file` command line parameter is ignored unless `--format=text` is also present. This allows you to still use the module for content strategy. -->
 
 ## Performance
 
