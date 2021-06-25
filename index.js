@@ -5,6 +5,16 @@ const { stripIndent } = require('common-tags');
 const defaultLocale = 'en:published';
 const sitemapCacheName = 'apos-sitemap';
 
+const noBaseUrlWarning = stripIndent`
+  ⚠️ You must specify the top-level baseUrl option for the application
+  when
+  configuring Apostrophe to use sitemap indexes.
+
+  Example: \`baseUrl: "https://mycompany.com"\` (no trailing slash)
+
+  Usually you will only do this in \`data/local.js\` in production.
+`;
+
 module.exports = {
   options: {
     alias: 'sitemap',
@@ -36,12 +46,7 @@ module.exports = {
           }
 
           if (!self.baseUrl) {
-            const error = stripIndent`
-              ⚠️ You must specify the top-level baseUrl option for the application
-              when configuring Apostrophe to use this task.
-              Example: \`baseUrl: "https://mycompany.com"\` (no trailing slash)
-              Usually you will only do this in data/local.js in production.
-            `;
+            const error = noBaseUrlWarning;
 
             return self.apos.util.error(error);
           }
@@ -193,12 +198,7 @@ module.exports = {
       writeIndex: function() {
         const now = new Date();
         if (!self.baseUrl) {
-          throw new Error(
-            'You must specify the top-level baseUrl option when configuring Apostrophe\n' +
-            'to use sitemap indexes. Example: baseUrl: "http://mycompany.com"\n\n' +
-            'Note there is NO TRAILING SLASH.\n\n' +
-            'Usually you will override this in data/local.js, on production.'
-          );
+          throw new Error(noBaseUrlWarning);
         }
 
         self.writeFile('sitemaps/index.xml',
