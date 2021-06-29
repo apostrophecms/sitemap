@@ -1,5 +1,4 @@
 const fs = require('fs');
-const dayjs = require('dayjs');
 const { stripIndent } = require('common-tags');
 
 const defaultLocale = 'en:published';
@@ -139,7 +138,6 @@ module.exports = {
 
         async function map () {
           self.maps = {};
-          self.today = dayjs().format('YYYY-MM-DD');
 
           const locales = [ defaultLocale ];
 
@@ -306,14 +304,7 @@ module.exports = {
             // Results in a reasonable priority relative
             // to regular pages
             piece.level = 3;
-            // Future events are interesting, past events are boring
-            if (piece.startDate) {
-              if (piece.startDate > self.today) {
-                piece.level--;
-              } else {
-                piece.level++;
-              }
-            }
+
             self.output(piece);
           });
 
