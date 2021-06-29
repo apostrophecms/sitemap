@@ -6,8 +6,7 @@ const defaultLocale = 'en:published';
 const sitemapCacheName = 'apos-sitemap';
 
 const noBaseUrlWarning = stripIndent`
-  ⚠️ You must specify the top-level baseUrl option for the application
-  when
+  ⚠️ You must specify the site-level baseUrl option for the  application when
   configuring Apostrophe to use sitemap indexes.
 
   Example: \`baseUrl: "https://mycompany.com"\` (no trailing slash)
@@ -33,6 +32,10 @@ module.exports = {
     self.piecesPerBatch = options.piecesPerBatch;
 
     self.baseUrl = options.baseUrl || self.apos.baseUrl;
+
+    if (!self.baseUrl) {
+      throw new Error(noBaseUrlWarning);
+    }
   },
   tasks (self) {
     return {
