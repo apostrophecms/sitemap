@@ -116,18 +116,20 @@ piecesPerBatch: 500
 
 ### Tasks
 
-#### `map`
+#### `print`
 
-The `map` command will generate an up-to-date sitemap on demand. The base command **prints the sitemap into the console**, or allows you to pipe it as needed, to help generate a static file version.On the command line, run:
+The `print` command will generate an up-to-date sitemap on demand and **print the sitemap into the console**. You can also pipe the output it as needed, to help generate a static file version. On the command line, run:
 
 ```bash
-node app @apostrophecms/sitemap:map
+node app @apostrophecms/sitemap:print
 ```
 
-Use the `--update-cache` option to force a cache update at any time. The map will not print to the console with this option. If the website is very large (multiple hundreds of URLs), running this task option with a cron job on the production server more often than the standard cache refresh can help ensure the cache is available when a search engine begins crawling the site.
+#### `update-cache`
+
+Use the `update-cache` task to force a cache update at any time. If the website is very large (multiple hundreds of URLs), running this task option with a cron job on the production server more often than the standard cache refresh can help ensure the cache is available when a search engine begins crawling the site.
 
 ```bash
-node app @apostrophecms/sitemap:map --update-cache
+node app @apostrophecms/sitemap:update-cache
 ```
 
 #### `clear`
@@ -149,4 +151,4 @@ Sitemap: https://example.com/sitemap.xml
 ### Troubleshooting
 
 - If you already have a static `public/sitemap.xml` file, **that file will be shown at the `/sitemap.xml` URL path instead.** Remove it to let the module take over.
-- Sitemaps are cached for one hour by default, so you won't see content changes instantly. See above about the `cacheLifetime` option, `clear` task, and `map --update-cache` task for ways to refresh the sitemap more frequently.
+- Sitemaps are cached for one hour by default, so you won't see content changes instantly. See above about the `cacheLifetime` option, `clear` task, and `update-cache` task for ways to refresh the sitemap more frequently.

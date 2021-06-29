@@ -25,7 +25,7 @@ module.exports = {
     piecesPerBatch: 100
   },
   init(self, options) {
-    self.caching = true;
+    self.updatingCache = true;
 
     self.cacheLifetime = options.cacheLifetime;
 
@@ -39,22 +39,16 @@ module.exports = {
   },
   tasks (self) {
     return {
-      map: {
-        usage: 'Generate a sitemap',
+      print: {
+        usage: 'Print a sitemap',
         async task (argv) {
-          if (argv['update-cache']) {
-            self.caching = true;
-          } else {
-            self.caching = false;
-          }
-
-          if (!self.baseUrl) {
-            const error = noBaseUrlWarning;
-
-            return self.apos.util.error(error);
-          }
-
-          return self.map();
+          return self.mapTask(false);
+        }
+      },
+      'update-cache': {
+        usage: 'Update the sitemap cache',
+        async task (argv) {
+          return self.mapTask(true);
         }
       },
       clear: {
@@ -81,10 +75,21 @@ module.exports = {
   },
   methods (self, options) {
     return {
+      mapTask: async function (caching) {
+        self.updatingCache = caching;
+
+        if (!self.baseUrl) {
+          const error = noBaseUrlWarning;
+
+          return self.apos.util.error(error);
+        }
+
+        return self.map();
+      },
       map: async function () {
         const argv = self.apos.argv;
 
-        if (self.caching) {
+        if (self.updatingCache) {
           self.cacheOutput = [];
         }
 
@@ -154,7 +159,7 @@ module.exports = {
       writeSitemap: function() {
         if (!self.perLocale) {
           // Simple single-file sitemap
-          self.file = self.caching
+          self.file = self.updatingCache
             ? 'sitemap.xml'
             : (self.apos.argv.file || '/dev/stdout');
 
@@ -181,7 +186,7 @@ module.exports = {
 
           self.writeIndex();
         }
-        if (self.caching) {
+        if (self.updatingCache) {
           return self.writeToCache();
         }
         return null;
@@ -240,7 +245,7 @@ module.exports = {
         );
       },
       writeFile: function(filename, str) {
-        if (!self.caching) {
+        if (!self.updatingCache) {
           filename = require('path').resolve(self.apos.rootDir + '/public', filename);
           if (filename === '/dev/stdout') {
             // Strange bug on MacOS when using writeFileSync with /dev/stdout
@@ -454,7 +459,7 @@ module.exports = {
         return xml;
       },
       ensureDir (dir) {
-        if (!self.caching) {
+        if (!self.updatingCache) {
           dir = self.apos.rootDir + '/public/' + dir;
           try {
             fs.mkdirSync(dir);
