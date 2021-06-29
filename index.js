@@ -17,17 +17,21 @@ const noBaseUrlWarning = stripIndent`
 module.exports = {
   options: {
     alias: 'sitemap',
-    // Cache sitemaps for 1 hour by default. Depending on page rank Google may
-    // look at your sitemap somewhere between daily and monthly, so don't get
-    // your hopes up too far about changing this
-    cacheLifetime: 60 * 60,
     // The number of pieces to index in each loop.
     piecesPerBatch: 100
   },
   init(self, options) {
     self.updatingCache = true;
+    // Cache sitemaps for 1 hour by default. Depending on page rank Google may
+    // look at your sitemap somewhere between daily and monthly, so don't get
+    // your hopes up too far about changing this
+    self.cacheLifetime = 60 * 60;
 
-    self.cacheLifetime = options.cacheLifetime;
+    if (typeof options.cacheLifetime === 'number' && options.cacheLifetime > 0) {
+      self.cacheLifetime = options.cacheLifetime;
+    } else if (options.cacheLifetime || options.cacheLifetime === 0) {
+      self.apos.util.warn('⚠️ The sitemap cacheLifetime option must be a number greater than zero.');
+    }
 
     self.piecesPerBatch = options.piecesPerBatch;
 

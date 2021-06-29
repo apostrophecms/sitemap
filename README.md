@@ -88,7 +88,7 @@ These can be added in the `app.js` configuration object for the module, but it i
 
 #### `cacheLifetime`
 
-By default sitemaps are cached for one hour. You can change this by specifying the `cacheLifetime` option to this module, in seconds.
+By default sitemaps are cached for one hour. You can change this by specifying the `cacheLifetime` option to this module, in seconds. It must be a number greater than zero.
 
 **Tip:** To make entering the cache lifetime easier it can help to write it as a math expression, multiplying the desired number of minutes by sixty:
 
