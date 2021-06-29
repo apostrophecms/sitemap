@@ -84,7 +84,7 @@ module.exports = {
 };
 ```
 
-These can be added in the `app.js` configuration object for the module, but it is better practice use a dedicated file for module configuration.
+These can be added in the `app.js` configuration object for the module, but it is better practice to use a dedicated file for module configuration.
 
 #### `cacheLifetime`
 
@@ -118,7 +118,7 @@ piecesPerBatch: 500
 
 #### `map`
 
-The `map` command with generate an up-to-date sitemap on demand. The base command **prints the sitemap into the console**, or allows you to pipe it as needed, to help generate a static file version.On the command line, run:
+The `map` command will generate an up-to-date sitemap on demand. The base command **prints the sitemap into the console**, or allows you to pipe it as needed, to help generate a static file version.On the command line, run:
 
 ```bash
 node app @apostrophecms/sitemap:map
