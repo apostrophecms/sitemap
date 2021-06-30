@@ -1,6 +1,6 @@
 {
   "name": "@apostrophecms/sitemap",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0",
   "description": "A template for creating an ApostropheCMS 3 module.",
   "main": "index.js",
   "scripts": {
