@@ -322,8 +322,6 @@ module.exports = {
         const locale = page.workflowLocale || defaultLocale;
 
         if (!self.excludeTypes.includes(page.type)) {
-          let url;
-
           // TODO: Revisit when supporting text format
           if (self.format === 'text') {
             if (self.indent) {
@@ -336,7 +334,6 @@ module.exports = {
               self.write(locale, page._url + '\n');
             }
           } else {
-            url = page._url;
             let priority = (page.level < 10) ? (1.0 - page.level / 10) : 0.1;
 
             if (typeof (page.siteMapPriority) === 'number') {
@@ -347,7 +344,7 @@ module.exports = {
               url: {
                 priority: priority,
                 changefreq: 'daily',
-                loc: url
+                loc: self.baseUrl + self.apos.prefix + page._url
               }
             });
           }
