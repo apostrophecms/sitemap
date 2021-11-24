@@ -17,6 +17,7 @@ describe('Apostrophe Sitemap', function() {
     await t.create({
       root: module,
       baseUrl: 'http://localhost:7780',
+      testModule: true,
       modules: {
         ...appConfig,
         testRunner: {
@@ -90,6 +91,7 @@ describe('Apostrophe Sitemap', function() {
     await t.create({
       root: module,
       baseUrl: 'http://localhost:7780',
+      testModule: true,
       modules: {
         ...appConfig,
         testRunner: {
