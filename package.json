@@ -10,9 +10,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/apostrophecms/@apostrophecms/sitemap.git"
+    "url": "git+https://github.com/apostrophecms/sitemap.git"
   },
-  "homepage": "https://github.com/apostrophecms/@apostrophecms/sitemap#readme",
+  "homepage": "https://github.com/apostrophecms/sitemap#readme",
   "author": "Apostrophe Technologies",
   "license": "MIT",
   "devDependencies": {
