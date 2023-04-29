@@ -36,6 +36,14 @@ module.exports = {
 
     self.baseUrl = options.baseUrl || self.apos.baseUrl;
 
+    if ('baseUrl' in options && options.baseUrl) {
+      self.baseUrl = options.baseUrl;
+      self.baseUrlOverridden = true;
+    } else {
+      self.baseUrl = self.apos.baseUrl;
+      self.baseUrlOverridden = false;
+    }
+
     if (!self.baseUrl) {
       throw new Error(noBaseUrlWarning);
     }
@@ -336,7 +344,17 @@ module.exports = {
               self.write(locale, page._url + '\n');
             }
           } else {
-            url = page._url;
+            if (self.baseUrlOverridden) {
+              try {
+                const parsedUrl = new URL(page._url);
+                url = self.baseUrl + parsedUrl.pathname;
+              } catch (error) {
+                url = page._url;
+              }
+            } else {
+              url = page._url;
+            }
+
             let priority = (page.level < 10) ? (1.0 - page.level / 10) : 0.1;
 
             if (typeof (page.siteMapPriority) === 'number') {
