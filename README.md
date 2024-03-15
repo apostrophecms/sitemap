@@ -1,7 +1,19 @@
-[![CircleCI](https://circleci.com/gh/apostrophecms/sitemap/tree/main.svg?style=svg)](https://circleci.com/gh/apostrophecms/sitemap/tree/main)
-[![Chat on Discord](https://img.shields.io/discord/517772094482677790.svg)](https://chat.apostrophecms.org)
+<div align="center">
+  <img src="https://raw.githubusercontent.com/apostrophecms/apostrophe/main/logo.svg" alt="ApostropheCMS logo" width="80" height="80">
 
-# Sitemap generator for Apostrophe 3
+  <h1>Sitemap generator for ApostropheCMS</h1>
+  <p>
+    <a aria-label="Apostrophe logo" href="https://docs.apostrophecms.org">
+      <img src="https://img.shields.io/badge/MADE%20FOR%20ApostropheCMS-000000.svg?style=for-the-badge&logo=Apostrophe&labelColor=6516dd">
+    </a>
+    <a aria-label="Join the community on Discord" href="http://chat.apostrophecms.org">
+      <img alt="" src="https://img.shields.io/discord/517772094482677790?color=5865f2&label=Join%20the%20Discord&logo=discord&logoColor=fff&labelColor=000&style=for-the-badge&logoWidth=20">
+    </a>
+    <a aria-label="License" href="https://github.com/apostrophecms/blog/blob/main/LICENSE.md">
+      <img alt="" src="https://img.shields.io/static/v1?style=for-the-badge&labelColor=000000&label=License&message=MIT&color=3DA639">
+    </a>
+  </p>
+</div>
 
 The Apostrophe Sitemap module generates XML sitemaps for websites powered by [ApostropheCMS](https://apostrophecms.com). The sitemap includes all of the pages on your site that are visible to the public, including "piece" content, such as events and blog posts.
 
