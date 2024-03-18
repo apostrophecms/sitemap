@@ -1,7 +1,7 @@
 {
   "name": "@apostrophecms/sitemap",
   "version": "1.0.2",
-  "description": "Sitemap generator for ApostropheCMS",
+  "description": "Sitemap generator for ApostropheCMS.",
   "main": "index.js",
   "scripts": {
     "lint": "npm run eslint",
