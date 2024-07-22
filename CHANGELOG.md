@@ -2,7 +2,8 @@
 
 ## UNRELEASED
 
-- Edits README and package description. No code changes.
+* Edits README and package description. No code changes.
+* Fix module configuration example in README.
 
 ## 1.0.2 - 2022-12-21
 
