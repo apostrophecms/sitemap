@@ -74,7 +74,9 @@ require('apostrophe')({
   shortName: 'my-project',
   modules: {
     '@apostrophecms/sitemap': {
-      baseUrl: 'https://example.com'
+      options: {
+        baseUrl: 'https://example.com'
+      }
     }
   }
 });
