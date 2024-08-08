@@ -1,6 +1,6 @@
 # Changelog
 
-## UNRELEASED
+## 1.0.3 (2024-08-08)
 
 * Edits README and package description. No code changes.
 * Fix module configuration example in README.
