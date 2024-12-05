@@ -27,7 +27,7 @@ A frequently updated and accurate XML sitemap allows search engines to index you
 | Module configuration to exclude certain doc types | ✅ Implemented |
 | Tasks to manually generate sitemap | ✅ Implemented |
 | Text-style sitemap generation (for content strategy work) | 🚧 Planned |
-| Support for multiple locales (localization) | 🚧 Planned |
+| Support for multiple locales (localization) | ✅ Implemented |
 | Output customization function | 🚧 Planned |
 
 ## Installation
@@ -63,23 +63,7 @@ It is important to configure a `baseUrl` for the project to properly display URL
 // data/local.js
 module.exports = {
   baseUrl: 'http://localhost:3000'
-});
-```
-
-You can also add baseUrl in the configuration of the sitemap module. You may not like to modify or overwrite the `baseUrl` for the site or prefer to not use a `baseUrl` for other purposes.
-
-```javascript
-// app.js
-require('apostrophe')({
-  shortName: 'my-project',
-  modules: {
-    '@apostrophecms/sitemap': {
-      options: {
-        baseUrl: 'https://example.com'
-      }
-    }
-  }
-});
+};
 ```
 
 ### Options

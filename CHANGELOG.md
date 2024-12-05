@@ -1,5 +1,9 @@
 # Changelog
 
+## UNRELEASED
+
+* Adds support for multiple locales (localization).
+
 ## 1.0.3 (2024-08-08)
 
 * Edits README and package description. No code changes.
