@@ -201,7 +201,7 @@ describe('Apostrophe Sitemap', function() {
         '<loc>http://localhost:7780/</loc>\n' +
         '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/" />\n' +
         '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/" />\n' +
-        '<xhtml:link rel="alternate" hreflang="fr" href="http://localhost:7780/fr/" />\n'
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/" />\n'
       ) !== -1
     );
     assert(
@@ -209,13 +209,13 @@ describe('Apostrophe Sitemap', function() {
         '<loc>http://localhost:7780/es/</loc>\n' +
         '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/" />\n' +
         '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/" />\n' +
-        '<xhtml:link rel="alternate" hreflang="fr" href="http://localhost:7780/fr/" />\n'
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/" />\n'
       ) !== -1
     );
     assert(
       xml.indexOf(
-        '<loc>http://localhost:7780/fr/</loc>\n' +
-        '<xhtml:link rel="alternate" hreflang="fr" href="http://localhost:7780/fr/" />\n' +
+        '<loc>http://fr.example.com/</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/" />\n' +
         '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/" />\n' +
         '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/" />\n'
       ) !== -1
@@ -226,7 +226,7 @@ describe('Apostrophe Sitemap', function() {
         '<loc>http://localhost:7780/tab-one/child-one</loc>\n' +
         '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/tab-one/child-one" />\n' +
         '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/tab-one/child-one" />\n' +
-        '<xhtml:link rel="alternate" hreflang="fr" href="http://localhost:7780/fr/tab-one/child-one" />\n'
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/tab-one/child-one" />\n'
       ) !== -1
     );
     assert(
@@ -234,13 +234,13 @@ describe('Apostrophe Sitemap', function() {
         '<loc>http://localhost:7780/es/tab-one/child-one</loc>\n' +
         '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/tab-one/child-one" />\n' +
         '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/tab-one/child-one" />\n' +
-        '<xhtml:link rel="alternate" hreflang="fr" href="http://localhost:7780/fr/tab-one/child-one" />\n'
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/tab-one/child-one" />\n'
       ) !== -1
     );
     assert(
       xml.indexOf(
-        '<loc>http://localhost:7780/fr/tab-one/child-one</loc>\n' +
-        '<xhtml:link rel="alternate" hreflang="fr" href="http://localhost:7780/fr/tab-one/child-one" />\n' +
+        '<loc>http://fr.example.com/tab-one/child-one</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/tab-one/child-one" />\n' +
         '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/tab-one/child-one" />\n' +
         '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/tab-one/child-one" />\n'
       ) !== -1
@@ -262,12 +262,12 @@ describe('Apostrophe Sitemap', function() {
     );
     assert(
       xml.indexOf(
-        '<loc>http://localhost:7780/fr/products/cheese</loc>'
+        '<loc>http://fr.example.com/products/cheese</loc>'
       ) === -1
     );
     assert(
       xml.indexOf(
-        '<xhtml:link rel="alternate" hreflang="fr" href="http://localhost:7780/fr/products/cheese" />'
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/products/cheese" />'
       ) === -1
     );
   });
@@ -360,7 +360,7 @@ function getAppConfig (options = {}) {
               },
               fr: {
                 label: 'Français',
-                prefix: '/fr'
+                hostname: 'fr.example.com'
               }
             }
           }
