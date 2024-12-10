@@ -183,11 +183,13 @@ describe('Apostrophe Sitemap', function() {
 
       const inserted = await apos.product.insert(apos.task.getReq(), cheeseProduct);
       await apos.product.publish(apos.task.getReq(), inserted);
+      inserted.slug = 'cheese-es';
       const localized = await apos.product.localize(apos.task.getReq(), inserted, 'es');
       await apos.product.publish(apos.task.getReq(), localized);
 
       assert(inserted._id);
-      assert(inserted.slug === 'cheese');
+      assert(inserted._id !== localized._id);
+      assert(localized.slug === 'cheese-es');
     }
   });
 
@@ -250,13 +252,13 @@ describe('Apostrophe Sitemap', function() {
       xml.indexOf(
         '<loc>http://localhost:7780/products/cheese</loc>\n' +
         '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/products/cheese" />\n' +
-        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/products/cheese" />'
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/products/cheese-es" />'
       ) !== -1
     );
     assert(
       xml.indexOf(
-        '<loc>http://localhost:7780/es/products/cheese</loc>\n' +
-        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/products/cheese" />\n' +
+        '<loc>http://localhost:7780/es/products/cheese-es</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/products/cheese-es" />\n' +
         '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/products/cheese" />\n'
       ) !== -1
     );
