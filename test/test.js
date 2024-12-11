@@ -68,12 +68,19 @@ describe('Apostrophe Sitemap', function() {
 
       assert(xml);
       assert(xml.indexOf('<loc>http://localhost:7780/</loc>') !== -1);
+      assert(xml.indexOf('<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/" />') !== -1);
       assert(xml.indexOf('<loc>http://localhost:7780/tab-one</loc>') !== -1);
+      assert(xml.indexOf('<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/tab-one" />') !== -1);
       assert(xml.indexOf('<loc>http://localhost:7780/tab-two</loc>') !== -1);
+      assert(xml.indexOf('<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/tab-two" />') !== -1);
       assert(xml.indexOf('<loc>http://localhost:7780/tab-one/child-one</loc>') !== -1);
+      assert(xml.indexOf('<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/tab-one/child-one" />') !== -1);
       assert(xml.indexOf('<loc>http://localhost:7780/products</loc>') !== -1);
+      assert(xml.indexOf('<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/products" />') !== -1);
       assert(xml.indexOf('<loc>http://localhost:7780/products/cheese</loc>') !== -1);
+      assert(xml.indexOf('<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/products/cheese" />') !== -1);
       assert(xml.indexOf('<loc>http://localhost:7780/products/rocks</loc>') === -1);
+      assert(xml.indexOf('<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/products/rocks" />') === -1);
     } catch (error) {
       assert(!error);
     }
@@ -88,7 +95,7 @@ describe('Apostrophe Sitemap', function() {
       excludeTypes: [ 'product-page', 'product' ]
     });
 
-    await t.create({
+    apos = await t.create({
       root: module,
       baseUrl: 'http://localhost:7780',
       testModule: true,
@@ -139,6 +146,133 @@ describe('Apostrophe Sitemap', function() {
     }
   });
 
+  it('should create new multi-language app', async function () {
+    await t.destroy(apos);
+
+    const appConfig = getAppConfig({
+      multilanguage: true
+    });
+    apos = await t.create({
+      root: module,
+      baseUrl: 'http://localhost:7780',
+      testModule: true,
+      modules: appConfig
+    });
+
+    assert.deepEqual(Object.keys(apos.i18n.getLocales()), [ 'en', 'es', 'fr' ]);
+
+    {
+      const rockProduct = apos.product.newInstance();
+      rockProduct.title = 'Rocks';
+      rockProduct.slug = 'rocks';
+      rockProduct.published = false;
+
+      const inserted = await apos.product.insert(apos.task.getReq({
+        mode: 'draft'
+      }), rockProduct);
+
+      assert(inserted.aposMode === 'draft');
+      assert(inserted.published === false);
+      assert(inserted.slug === 'rocks');
+    }
+
+    {
+      const cheeseProduct = apos.product.newInstance();
+      cheeseProduct.title = 'Cheese';
+      cheeseProduct.slug = 'cheese';
+
+      const inserted = await apos.product.insert(apos.task.getReq(), cheeseProduct);
+      await apos.product.publish(apos.task.getReq(), inserted);
+      inserted.slug = 'cheese-es';
+      const localized = await apos.product.localize(apos.task.getReq(), inserted, 'es');
+      await apos.product.publish(apos.task.getReq(), localized);
+
+      assert(inserted._id);
+      assert(inserted._id !== localized._id);
+      assert(localized.slug === 'cheese-es');
+    }
+  });
+
+  it('should generate a multi-language sitemap', async function () {
+    const xml = await apos.http.get('/sitemap.xml');
+
+    assert(xml);
+    // Home
+    assert(
+      xml.indexOf(
+        '<loc>http://localhost:7780/</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/" />\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/" />\n' +
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/" />\n'
+      ) !== -1
+    );
+    assert(
+      xml.indexOf(
+        '<loc>http://localhost:7780/es/</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/" />\n' +
+        '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/" />\n' +
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/" />\n'
+      ) !== -1
+    );
+    assert(
+      xml.indexOf(
+        '<loc>http://fr.example.com/</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/" />\n' +
+        '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/" />\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/" />\n'
+      ) !== -1
+    );
+    // Child One
+    assert(
+      xml.indexOf(
+        '<loc>http://localhost:7780/tab-one/child-one</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/tab-one/child-one" />\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/tab-one/child-one" />\n' +
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/tab-one/child-one" />\n'
+      ) !== -1
+    );
+    assert(
+      xml.indexOf(
+        '<loc>http://localhost:7780/es/tab-one/child-one</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/tab-one/child-one" />\n' +
+        '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/tab-one/child-one" />\n' +
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/tab-one/child-one" />\n'
+      ) !== -1
+    );
+    assert(
+      xml.indexOf(
+        '<loc>http://fr.example.com/tab-one/child-one</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/tab-one/child-one" />\n' +
+        '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/tab-one/child-one" />\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/tab-one/child-one" />\n'
+      ) !== -1
+    );
+    // Product Cheese
+    assert(
+      xml.indexOf(
+        '<loc>http://localhost:7780/products/cheese</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/products/cheese" />\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/products/cheese-es" />'
+      ) !== -1
+    );
+    assert(
+      xml.indexOf(
+        '<loc>http://localhost:7780/es/products/cheese-es</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/products/cheese-es" />\n' +
+        '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/products/cheese" />\n'
+      ) !== -1
+    );
+    assert(
+      xml.indexOf(
+        '<loc>http://fr.example.com/products/cheese</loc>'
+      ) === -1
+    );
+    assert(
+      xml.indexOf(
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/products/cheese" />'
+      ) === -1
+    );
+  });
 });
 
 const parkedPages = [
@@ -213,6 +347,29 @@ function getAppConfig (options = {}) {
         session: { secret: 'supersecret' }
       }
     },
+    ...(options.multilanguage
+      ? {
+        '@apostrophecms/i18n': {
+          options: {
+            defaultLocale: 'en',
+            locales: {
+              en: {
+                label: 'English'
+              },
+              es: {
+                label: 'Español',
+                prefix: '/es'
+              },
+              fr: {
+                label: 'Français',
+                hostname: 'fr.example.com'
+              }
+            }
+          }
+        }
+      }
+      : {}
+    ),
     '@apostrophecms/sitemap': {
       options: {
         excludeTypes: options.excludeTypes

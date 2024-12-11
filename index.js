@@ -1,7 +1,6 @@
 const fs = require('fs');
 const { stripIndent } = require('common-tags');
 
-const defaultLocale = 'en:published';
 const sitemapCacheName = 'apos-sitemap';
 
 const noBaseUrlWarning = stripIndent`
@@ -34,11 +33,13 @@ module.exports = {
 
     self.piecesPerBatch = options.piecesPerBatch;
 
-    self.baseUrl = options.baseUrl || self.apos.baseUrl;
+    self.baseUrl = self.apos.baseUrl;
 
     if (!self.baseUrl) {
       throw new Error(noBaseUrlWarning);
     }
+
+    self.defaultLocale = self.apos.i18n.defaultLocale;
   },
   tasks (self) {
     return {
@@ -99,6 +100,7 @@ module.exports = {
         await lock();
         initConfig();
         await map();
+        await hreflang();
         await write();
         await unlock();
 
@@ -139,14 +141,57 @@ module.exports = {
         async function map () {
           self.maps = {};
 
-          const locales = [ defaultLocale ];
+          const locales = Object.keys(self.apos.i18n.getLocales());
 
           for (const locale of locales) {
-            const req = self.apos.task.getReq();
-            req.aposLocale = locale;
+            const req = self.apos.task.getAnonReq({
+              locale,
+              mode: 'published'
+            });
 
             await self.getPages(req);
             await self.getPieces(req);
+          }
+        }
+
+        async function hreflang() {
+          const alternativesByAposId = {};
+
+          for (const [ locale, entries ] of Object.entries(self.maps)) {
+            entries.forEach(entry => {
+              entry.url['xhtml:link'] = [ {
+                _attributes: {
+                  rel: 'alternate',
+                  hreflang: locale,
+                  href: entry.url.loc
+                }
+              } ];
+
+              alternativesByAposId[entry.url.id] ??= [];
+              alternativesByAposId[entry.url.id].push(entry);
+            });
+          }
+
+          for (const entries of Object.values(self.maps)) {
+            entries.forEach(entry => {
+              const links = alternativesByAposId[entry.url.id]
+                .filter(alternative => alternative !== entry)
+                .map(alternative => ({
+                  _attributes: {
+                    rel: 'alternate',
+                    hreflang: alternative.url.locale,
+                    href: alternative.url.loc
+                  }
+                }));
+              entry.url['xhtml:link'].push(...links);
+            });
+          }
+
+          for (const entries of Object.values(self.maps)) {
+            entries.forEach(entry => {
+              delete entry.url.id;
+              delete entry.url.locale;
+            });
           }
         }
 
@@ -199,7 +244,12 @@ module.exports = {
 
         async function insert() {
           for (const doc of self.cacheOutput) {
-            await self.apos.cache.set(sitemapCacheName, doc.filename, doc, self.cacheLifetime);
+            await self.apos.cache.set(
+              sitemapCacheName,
+              doc.filename,
+              doc,
+              self.cacheLifetime
+            );
           }
         }
 
@@ -257,7 +307,7 @@ module.exports = {
           }
         } else {
           self.cacheOutput.push({
-            filename: filename,
+            filename,
             data: str,
             createdAt: new Date()
           });
@@ -319,7 +369,7 @@ module.exports = {
       // any. The entry is buffered for output as part of the map for the
       // appropriate locale.
       output: async function(page) {
-        const locale = page.workflowLocale || defaultLocale;
+        const locale = (page.aposLocale || self.defaultLocale).split(':')[0];
 
         if (!self.excludeTypes.includes(page.type)) {
           let url;
@@ -345,7 +395,9 @@ module.exports = {
 
             self.write(locale, {
               url: {
-                priority: priority,
+                id: page.aposDocId,
+                locale,
+                priority,
                 changefreq: 'daily',
                 loc: url
               }
@@ -409,7 +461,7 @@ module.exports = {
           return res.status(500).send('error');
         }
       },
-      stringify (value) {
+      stringify(value) {
         // TODO: Revisit when supporting text format
         if (Array.isArray(value) && (self.format !== 'xml')) {
           return value.join('');
@@ -428,7 +480,7 @@ module.exports = {
             return;
           }
           if (Array.isArray(v)) {
-            v.forEach(v, function(el) {
+            v.forEach(function(el) {
               element(k, el);
             });
           } else {
@@ -444,10 +496,15 @@ module.exports = {
 
               xml += ' ' + a + '="' + self.apos.util.escapeHtml(av) + '"';
             }
-
+          }
+          // Ensure that empty tags are self-closing
+          const value = self.stringify(v || '');
+          if (typeof value === 'undefined' || value === '') {
+            xml += ' />\n';
+            return;
           }
           xml += '>';
-          xml += self.stringify(v || '');
+          xml += value;
           xml += '</' + k + '>\n';
         }
 
