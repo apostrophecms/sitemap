@@ -1,6 +1,6 @@
 # Changelog
 
-## UNRELEASED
+## 1.1.0 (2024-12-18)
 
 * Adds support for multiple locales (localization).
 
