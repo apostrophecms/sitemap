@@ -1,6 +1,3 @@
 {
-  "extends": [ "apostrophe" ],
-  "rules": {
-    "no-var": 1
-  }
+  "extends": [ "apostrophe" ]
 }
