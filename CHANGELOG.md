@@ -1,6 +1,7 @@
 # Changelog
 
 ## UNRELEASED
+Sitemaps per locale are generated correctly
 
 ### Changes
 
