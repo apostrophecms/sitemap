@@ -225,7 +225,7 @@ module.exports = {
             // TODO: Revisit when supporting text format
             const extension = (self.format === 'xml') ? 'xml' : 'txt';
 
-            map = map.map(map, self.stringify).join('\n');
+            map = map.map(self.stringify).join('\n');
 
             self.writeMap('sitemaps/' + key + '.' + extension, map);
 
