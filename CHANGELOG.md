@@ -1,11 +1,14 @@
 # Changelog
 
 ## UNRELEASED
-Sitemaps per locale are generated correctly
+
+### Fixes
+
+* Sitemaps per locale are generated correctly. Thanks to [Eduardo Correal](https://github.com/ecb34) for this change.
 
 ### Changes
 
-* Bumbs `eslint-config-apostrophe` to `5`, fixes errors, removes unused dependencies.
+* Bumps `eslint-config-apostrophe` to `5`, fixes errors, removes unused dependencies.
 
 ## 1.1.0 (2024-12-18)
 
