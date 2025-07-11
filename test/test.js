@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const assert = require('assert');
 const t = require('apostrophe/test-lib/util');
 
@@ -420,15 +421,36 @@ describe('Apostrophe Sitemap', function() {
     assert.deepEqual(Object.keys(apos.i18n.getLocales()), [ 'en', 'es', 'fr' ]);
 
     // Add test content
-    const cheeseProduct = apos.product.newInstance();
-    cheeseProduct.title = 'Cheese';
-    cheeseProduct.slug = 'cheese';
+    {
+      const rockProduct = apos.product.newInstance();
+      rockProduct.title = 'Rocks';
+      rockProduct.slug = 'rocks';
+      rockProduct.published = false;
 
-    const inserted = await apos.product.insert(apos.task.getReq(), cheeseProduct);
-    await apos.product.publish(apos.task.getReq(), inserted);
+      const inserted = await apos.product.insert(apos.task.getReq({
+        mode: 'draft'
+      }), rockProduct);
 
-    assert(inserted._id);
-    assert(inserted.slug === 'cheese');
+      assert(inserted.aposMode === 'draft');
+      assert(inserted.published === false);
+      assert(inserted.slug === 'rocks');
+    }
+
+    {
+      const cheeseProduct = apos.product.newInstance();
+      cheeseProduct.title = 'Cheese';
+      cheeseProduct.slug = 'cheese';
+
+      const inserted = await apos.product.insert(apos.task.getReq(), cheeseProduct);
+      await apos.product.publish(apos.task.getReq(), inserted);
+      inserted.slug = 'cheese-es';
+      const localized = await apos.product.localize(apos.task.getReq(), inserted, 'es');
+      await apos.product.publish(apos.task.getReq(), localized);
+
+      assert(inserted._id);
+      assert(inserted._id !== localized._id);
+      assert(localized.slug === 'cheese-es');
+    }
   });
 
   it('should generate sitemap index when perLocale is true without crashing', async function () {
@@ -467,7 +489,7 @@ describe('Apostrophe Sitemap', function() {
     }
   });
 
-  it('should verify sitemap.xml redirects to index when perLocale is true', async function () {
+  it('should verify sitemap.xml does not crash site when perLocale is true', async function () {
     try {
       // When perLocale is true, the main sitemap.xml should not exist
       // and should return a 404 or redirect to the index
@@ -582,7 +604,8 @@ function getAppConfig (options = {}) {
     ),
     '@apostrophecms/sitemap': {
       options: {
-        excludeTypes: options.excludeTypes
+        excludeTypes: options.excludeTypes,
+        perLocale: options.perLocale || false
       }
     },
     '@apostrophecms/page': {
