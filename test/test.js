@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const assert = require('assert');
 const t = require('apostrophe/test-lib/util');
 
@@ -273,6 +274,237 @@ describe('Apostrophe Sitemap', function() {
       ) === -1
     );
   });
+
+  it('should create new multi-language app', async function () {
+    await t.destroy(apos);
+
+    const appConfig = getAppConfig({
+      multilanguage: true
+    });
+    apos = await t.create({
+      root: module,
+      baseUrl: 'http://localhost:7780',
+      testModule: true,
+      modules: appConfig
+    });
+
+    assert.deepEqual(Object.keys(apos.i18n.getLocales()), [ 'en', 'es', 'fr' ]);
+
+    {
+      const rockProduct = apos.product.newInstance();
+      rockProduct.title = 'Rocks';
+      rockProduct.slug = 'rocks';
+      rockProduct.published = false;
+
+      const inserted = await apos.product.insert(apos.task.getReq({
+        mode: 'draft'
+      }), rockProduct);
+
+      assert(inserted.aposMode === 'draft');
+      assert(inserted.published === false);
+      assert(inserted.slug === 'rocks');
+    }
+
+    {
+      const cheeseProduct = apos.product.newInstance();
+      cheeseProduct.title = 'Cheese';
+      cheeseProduct.slug = 'cheese';
+
+      const inserted = await apos.product.insert(apos.task.getReq(), cheeseProduct);
+      await apos.product.publish(apos.task.getReq(), inserted);
+      inserted.slug = 'cheese-es';
+      const localized = await apos.product.localize(apos.task.getReq(), inserted, 'es');
+      await apos.product.publish(apos.task.getReq(), localized);
+
+      assert(inserted._id);
+      assert(inserted._id !== localized._id);
+      assert(localized.slug === 'cheese-es');
+    }
+  });
+
+  it('should generate a multi-language sitemap', async function () {
+    const xml = await apos.http.get('/sitemap.xml');
+
+    assert(xml);
+    // Home
+    assert(
+      xml.indexOf(
+        '<loc>http://localhost:7780/</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/" />\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/" />\n' +
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/" />\n'
+      ) !== -1
+    );
+    assert(
+      xml.indexOf(
+        '<loc>http://localhost:7780/es/</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/" />\n' +
+        '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/" />\n' +
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/" />\n'
+      ) !== -1
+    );
+    assert(
+      xml.indexOf(
+        '<loc>http://fr.example.com/</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/" />\n' +
+        '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/" />\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/" />\n'
+      ) !== -1
+    );
+    // Child One
+    assert(
+      xml.indexOf(
+        '<loc>http://localhost:7780/tab-one/child-one</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/tab-one/child-one" />\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/tab-one/child-one" />\n' +
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/tab-one/child-one" />\n'
+      ) !== -1
+    );
+    assert(
+      xml.indexOf(
+        '<loc>http://localhost:7780/es/tab-one/child-one</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/tab-one/child-one" />\n' +
+        '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/tab-one/child-one" />\n' +
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/tab-one/child-one" />\n'
+      ) !== -1
+    );
+    assert(
+      xml.indexOf(
+        '<loc>http://fr.example.com/tab-one/child-one</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/tab-one/child-one" />\n' +
+        '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/tab-one/child-one" />\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/tab-one/child-one" />\n'
+      ) !== -1
+    );
+    // Product Cheese
+    assert(
+      xml.indexOf(
+        '<loc>http://localhost:7780/products/cheese</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/products/cheese" />\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/products/cheese-es" />'
+      ) !== -1
+    );
+    assert(
+      xml.indexOf(
+        '<loc>http://localhost:7780/es/products/cheese-es</loc>\n' +
+        '<xhtml:link rel="alternate" hreflang="es" href="http://localhost:7780/es/products/cheese-es" />\n' +
+        '<xhtml:link rel="alternate" hreflang="en" href="http://localhost:7780/products/cheese" />\n'
+      ) !== -1
+    );
+    assert(
+      xml.indexOf(
+        '<loc>http://fr.example.com/products/cheese</loc>'
+      ) === -1
+    );
+    assert(
+      xml.indexOf(
+        '<xhtml:link rel="alternate" hreflang="fr" href="http://fr.example.com/products/cheese" />'
+      ) === -1
+    );
+  });
+
+  it('should create app with perLocale option enabled', async function () {
+    await t.destroy(apos);
+
+    const appConfig = getAppConfig({
+      multilanguage: true,
+      perLocale: true
+    });
+
+    apos = await t.create({
+      root: module,
+      baseUrl: 'http://localhost:7780',
+      testModule: true,
+      modules: appConfig
+    });
+
+    assert.deepEqual(Object.keys(apos.i18n.getLocales()), [ 'en', 'es', 'fr' ]);
+
+    // Add test content
+    {
+      const rockProduct = apos.product.newInstance();
+      rockProduct.title = 'Rocks';
+      rockProduct.slug = 'rocks';
+      rockProduct.published = false;
+
+      const inserted = await apos.product.insert(apos.task.getReq({
+        mode: 'draft'
+      }), rockProduct);
+
+      assert(inserted.aposMode === 'draft');
+      assert(inserted.published === false);
+      assert(inserted.slug === 'rocks');
+    }
+
+    {
+      const cheeseProduct = apos.product.newInstance();
+      cheeseProduct.title = 'Cheese';
+      cheeseProduct.slug = 'cheese';
+
+      const inserted = await apos.product.insert(apos.task.getReq(), cheeseProduct);
+      await apos.product.publish(apos.task.getReq(), inserted);
+      inserted.slug = 'cheese-es';
+      const localized = await apos.product.localize(apos.task.getReq(), inserted, 'es');
+      await apos.product.publish(apos.task.getReq(), localized);
+
+      assert(inserted._id);
+      assert(inserted._id !== localized._id);
+      assert(localized.slug === 'cheese-es');
+    }
+  });
+
+  it('should generate sitemap index when perLocale is true without crashing', async function () {
+    try {
+      // Test that sitemap index is accessible
+      const indexXml = await apos.http.get('/sitemaps/index.xml');
+
+      assert(indexXml);
+      assert(indexXml.indexOf('<sitemapindex') !== -1);
+      assert(indexXml.indexOf('<sitemap>') !== -1);
+      assert(indexXml.indexOf('<loc>http://localhost:7780/sitemaps/en.xml</loc>') !== -1);
+      assert(indexXml.indexOf('<loc>http://localhost:7780/sitemaps/es.xml</loc>') !== -1);
+      assert(indexXml.indexOf('<loc>http://localhost:7780/sitemaps/fr.xml</loc>') !== -1);
+      assert(indexXml.indexOf('<lastmod>') !== -1);
+
+      // Test that individual locale sitemaps are accessible
+      const enXml = await apos.http.get('/sitemaps/en.xml');
+      assert(enXml);
+      assert(enXml.indexOf('<urlset') !== -1);
+      assert(enXml.indexOf('<loc>http://localhost:7780/</loc>') !== -1);
+      assert(enXml.indexOf('<loc>http://localhost:7780/products/cheese</loc>') !== -1);
+
+      const esXml = await apos.http.get('/sitemaps/es.xml');
+      assert(esXml);
+      assert(esXml.indexOf('<urlset') !== -1);
+      assert(esXml.indexOf('<loc>http://localhost:7780/es/</loc>') !== -1);
+
+      const frXml = await apos.http.get('/sitemaps/fr.xml');
+      assert(frXml);
+      assert(frXml.indexOf('<urlset') !== -1);
+      assert(frXml.indexOf('<loc>http://fr.example.com/</loc>') !== -1);
+
+    } catch (error) {
+      // If this fails, it means the perLocale option is causing crashes
+      assert(!error, `perLocale sitemap generation failed: ${error.message}`);
+    }
+  });
+
+  it('should verify sitemap.xml does not crash site when perLocale is true', async function () {
+    try {
+      // When perLocale is true, the main sitemap.xml should not exist
+      // and should return a 404 or redirect to the index
+      const response = await apos.http.get('/sitemap.xml');
+
+      // This might be a 404 or might redirect to index - either is acceptable
+      // The important thing is that it doesn't crash the application
+      assert(response !== undefined);
+
+    } catch (error) {
+      // A 404 is expected behavior when perLocale is true
+      // We just want to make sure the application doesn't crash
+      assert(error.status === 404 || error.message.includes('404'));
+    }
+  });
 });
 
 const parkedPages = [
@@ -372,7 +604,8 @@ function getAppConfig (options = {}) {
     ),
     '@apostrophecms/sitemap': {
       options: {
-        excludeTypes: options.excludeTypes
+        excludeTypes: options.excludeTypes,
+        perLocale: options.perLocale || false
       }
     },
     '@apostrophecms/page': {
