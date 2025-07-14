@@ -112,6 +112,32 @@ If you have thousands of URLs to index, building the sitemap may take a long tim
 piecesPerBatch: 500
 ```
 
+### `perLocale`
+
+If your project uses multiple locales and you want **each locale to have its own sitemap**, enable the `perLocale` option:
+
+```js
+// modules/@apostrophecms/sitemap/index.js
+module.exports = {
+  options: {
+    perLocale: true
+  }
+};
+```
+
+This will:
+
+* Generate separate sitemap files for each locale (e.g., `/sitemaps/en.xml`, `/sitemaps/es.xml`, etc.)
+* Serve a sitemap index file at `/sitemaps/index.xml`
+* Disable the default `/sitemap.xml` route (returns a 404)
+
+> 💡 **Tip**
+> If you're using multiple locales, enable `perLocale` to generate a separate sitemap for each one.
+
+> ```
+> Sitemap: https://example.com/sitemaps/index.xml
+> ```
+
 ### Tasks
 
 #### `print`

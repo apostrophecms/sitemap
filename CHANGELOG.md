@@ -1,5 +1,17 @@
 # Changelog
 
+## UNRELEASED
+
+### Adds
+
+- Adds tests for the `perLocale` option
+
+### Changes
+
+- Updates the README to include the `perLocale` option
+
+### Fixes
+
 ## 1.1.1 (2025-07-09)
 
 ### Fixes
