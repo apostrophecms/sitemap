@@ -4,6 +4,7 @@
 
 ### Adds
 
+- Factors out a `getReq(locale)` method to allow extension of that logic, no behavior change
 - Adds tests for the `perLocale` option
 
 ### Changes

@@ -144,10 +144,7 @@ module.exports = {
           const locales = Object.keys(self.apos.i18n.getLocales());
 
           for (const locale of locales) {
-            const req = self.apos.task.getAnonReq({
-              locale,
-              mode: 'published'
-            });
+            const req = self.getReq(locale);
 
             await self.getPages(req);
             await self.getPieces(req);
@@ -202,6 +199,15 @@ module.exports = {
         async function unlock() {
           await self.apos.lock.unlock('apos-sitemap');
         }
+      },
+      // Reqturn a req suitable for fetching content in the given locale
+      // that belongs in the sitemap. A useful extension point for projects
+      // that do unusual things with proxied URLs, etc.
+      getReq(locale) {
+        return self.apos.task.getAnonReq({
+          locale,
+          mode: 'published'
+        });
       },
       writeSitemap: function() {
         if (!self.perLocale) {
